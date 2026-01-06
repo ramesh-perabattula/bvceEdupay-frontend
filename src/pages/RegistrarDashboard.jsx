@@ -9,10 +9,13 @@ const RegistrarDashboard = () => {
     // Create Student Form
     const [formData, setFormData] = useState({
         username: '', password: '', name: '', department: 'CSE',
-        currentYear: 1, quota: 'government', entry: 'regular', email: '',
+        currentYear: 1, batch: '2024-2028', quota: 'government', entry: 'regular', email: '',
         transportOpted: false, transportRoute: '', hostelOpted: false, placementOpted: false,
         assignedCollegeFee: 0, assignedTransportFee: 0, assignedHostelFee: 0, assignedPlacementFee: 0
     });
+
+    // Fee Waiver State for Government Quota
+    const [isFeeWaiver, setIsFeeWaiver] = useState(true);
 
     // Removed regulations and batches arrays as they are no longer needed
 
@@ -143,21 +146,48 @@ const RegistrarDashboard = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Quota</label>
                                 <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
-                                    value={formData.quota} onChange={e => setFormData({ ...formData, quota: e.target.value })}>
-                                    <option value="government">Government (Zero College Fee)</option>
+                                    value={formData.quota}
+                                    onChange={e => {
+                                        const newQuota = e.target.value;
+                                        setFormData({ ...formData, quota: newQuota });
+                                        // Reset waiver to true if switching to gov, else irrelevant
+                                        if (newQuota === 'government') setIsFeeWaiver(true);
+                                    }}>
+                                    <option value="government">Government</option>
                                     <option value="management">Management</option>
+                                    <option value="nri">Foreign/NRI (Other Country)</option>
                                 </select>
                             </div>
                         </div>
 
 
 
-                        {/* Management Fee Input - Visible Only for Management */}
-                        {formData.quota === 'management' && (
+                        {/* Fee Logic for Government Quota */}
+                        {formData.quota === 'government' && (
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                                <div className="flex items-center mb-2">
+                                    <input type="checkbox" id="feeWaiver" className="h-4 w-4 text-green-600 rounded"
+                                        checked={isFeeWaiver} onChange={e => {
+                                            setIsFeeWaiver(e.target.checked);
+                                            if (e.target.checked) {
+                                                setFormData(prev => ({ ...prev, assignedCollegeFee: 0 }));
+                                            }
+                                        }} />
+                                    <label htmlFor="feeWaiver" className="ml-2 block text-sm font-bold text-gray-900">
+                                        Eligible for Government Free Seat / Scholarship?
+                                    </label>
+                                </div>
+                                <p className="text-xs text-gray-600">
+                                    If checked, College Fee will be 0. If unchecked, provide the fee amount.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* College Fee Input - Visible for Management/NRI OR (Government AND NOT Waiver) */}
+                        {(formData.quota === 'management' || formData.quota === 'nri' || (formData.quota === 'government' && !isFeeWaiver)) && (
                             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                                <label className="block text-sm font-bold text-yellow-800">Assign Management College Fee (₹)</label>
+                                <label className="block text-sm font-bold text-yellow-800">Assign College Fee (₹)</label>
                                 <input type="number" required min="1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
                                     value={formData.assignedCollegeFee} onChange={e => setFormData({ ...formData, assignedCollegeFee: e.target.value })} />
                             </div>
@@ -228,13 +258,24 @@ const RegistrarDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Current Year</label>
-                                <select disabled className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-gray-100 cursor-not-allowed"
+                                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
                                     value={formData.currentYear} onChange={e => setFormData({ ...formData, currentYear: parseInt(e.target.value) })}>
                                     {[1, 2, 3, 4].map(y => <option key={y} value={y}>Year {y}</option>)}
                                 </select>
                             </div>
 
-                            {/* Removed Batch and Regulation Selectors */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Batch</label>
+                                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
+                                    value={formData.batch} onChange={e => setFormData({ ...formData, batch: e.target.value })}>
+                                    <option>2021-2025</option>
+                                    <option>2022-2026</option>
+                                    <option>2023-2027</option>
+                                    <option>2024-2028</option>
+                                    <option>2025-2029</option>
+                                    <option>2026-2030</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div>
